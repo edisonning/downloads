@@ -69,13 +69,14 @@ function setupDownloadLinks() {
     
     downloadLinks.forEach(link => {
         link.addEventListener('click', function(e) {
-            e.preventDefault();
-            
             const isAndroidLink = this.closest('.download-card').querySelector('.platform-icon.android');
             const platform = isAndroidLink ? 'Android' : 'iOS';
             
-            // 显示下载提示
-            showDownloadModal(platform);
+            // 只对iOS显示提示，Android直接下载
+            if (!isAndroidLink) {
+                e.preventDefault();
+                showDownloadModal(platform);
+            }
             
             // 统计下载点击
             trackDownload(platform);
