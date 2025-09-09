@@ -22,9 +22,6 @@ document.addEventListener('DOMContentLoaded', function() {
     // 添加下载链接点击事件
     setupDownloadLinks();
 
-    // 添加二维码长按保存功能
-    setupQRCodeInteraction();
-
     // 添加平滑滚动
     setupSmoothScroll();
 
@@ -326,84 +323,7 @@ function showDownloadModal(platform) {
     }, 3000);
 }
 
-// 设置二维码交互
-function setupQRCodeInteraction() {
-    const qrCodes = document.querySelectorAll('.qr-placeholder');
-    
-    qrCodes.forEach(qr => {
-        // 长按保存提示
-        let longPressTimer;
-        
-        qr.addEventListener('touchstart', function(e) {
-            longPressTimer = setTimeout(() => {
-                showToast('长按保存二维码到相册');
-            }, 1000);
-        });
-        
-        qr.addEventListener('touchend', function(e) {
-            clearTimeout(longPressTimer);
-        });
-        
-        qr.addEventListener('touchmove', function(e) {
-            clearTimeout(longPressTimer);
-        });
-        
-        // 点击放大二维码
-        qr.addEventListener('click', function() {
-            enlargeQRCode(this);
-        });
-    });
-}
 
-// 放大二维码
-function enlargeQRCode(qrElement) {
-    const overlay = document.createElement('div');
-    overlay.className = 'qr-overlay';
-    overlay.innerHTML = `
-        <div class="enlarged-qr">
-            ${qrElement.innerHTML}
-            <p>扫描二维码下载App</p>
-            <button class="close-enlarged">关闭</button>
-        </div>
-    `;
-    
-    overlay.style.cssText = `
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: rgba(0, 0, 0, 0.8);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        z-index: 1000;
-        animation: fadeIn 0.3s ease;
-    `;
-    
-    const enlargedQR = overlay.querySelector('.enlarged-qr');
-    enlargedQR.style.cssText = `
-        background: white;
-        padding: 2rem;
-        border-radius: 16px;
-        text-align: center;
-        animation: zoomIn 0.3s ease;
-    `;
-    
-    enlargedQR.querySelector('svg').style.cssText = `
-        width: 200px;
-        height: 200px;
-    `;
-    
-    document.body.appendChild(overlay);
-    
-    // 关闭事件
-    overlay.addEventListener('click', function(e) {
-        if (e.target === overlay || e.target.classList.contains('close-enlarged')) {
-            document.body.removeChild(overlay);
-        }
-    });
-}
 
 // 设置平滑滚动
 function setupSmoothScroll() {
