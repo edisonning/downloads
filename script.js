@@ -82,10 +82,6 @@ function setupDownloadLinks() {
                 e.preventDefault();
                 showDownloadModal(platform);
             }
-            // Android在非微信环境下直接下载，不阻止默认行为
-            
-            // 统计下载点击
-            trackDownload(platform);
         });
     });
 }
@@ -373,24 +369,7 @@ function showToast(message) {
     }, 3000);
 }
 
-// 统计下载点击
-function trackDownload(platform) {
-    // 这里可以添加统计代码
-    console.log(`用户点击了${platform}下载链接`);
-    
-    // 示例：发送统计数据到服务器
-    // fetch('/api/track-download', {
-    //     method: 'POST',
-    //     headers: {
-    //         'Content-Type': 'application/json',
-    //     },
-    //     body: JSON.stringify({
-    //         platform: platform,
-    //         timestamp: new Date().toISOString(),
-    //         userAgent: navigator.userAgent
-    //     })
-    // });
-}
+
 
 // 添加CSS动画
 const style = document.createElement('style');
