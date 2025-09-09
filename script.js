@@ -72,15 +72,200 @@ function setupDownloadLinks() {
             const isAndroidLink = this.closest('.download-card').querySelector('.platform-icon.android');
             const platform = isAndroidLink ? 'Android' : 'iOS';
             
-            // 只对iOS显示提示，Android直接下载
-            if (!isAndroidLink) {
+            // 检测是否在微信中
+            const userAgent = navigator.userAgent.toLowerCase();
+            const isWeChat = userAgent.includes('micromessenger');
+            
+            if (isAndroidLink && isWeChat) {
+                // 在微信中点击Android下载，显示浏览器打开提示
+                e.preventDefault();
+                showWeChatBrowserTip();
+            } else if (!isAndroidLink) {
+                // iOS显示提示
                 e.preventDefault();
                 showDownloadModal(platform);
             }
+            // Android在非微信环境下直接下载，不阻止默认行为
             
             // 统计下载点击
             trackDownload(platform);
         });
+    });
+}
+
+// 显示微信浏览器打开提示
+function showWeChatBrowserTip() {
+    const modal = document.createElement('div');
+    modal.className = 'wechat-tip-modal';
+    modal.innerHTML = `
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>🚀 下载车载终端运维App</h3>
+                <button class="close-btn">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="tip-icon">📱</div>
+                <p class="tip-text">检测到您正在微信中访问</p>
+                <p class="tip-desc">为了正常下载APK文件，请按以下步骤操作：</p>
+                <div class="steps-container">
+                    <div class="step-item">
+                        <span class="step-num">1</span>
+                        <span>点击右上角 <strong>⋯</strong> 菜单</span>
+                    </div>
+                    <div class="step-item">
+                        <span class="step-num">2</span>
+                        <span>选择 <strong>"在浏览器中打开"</strong></span>
+                    </div>
+                    <div class="step-item">
+                        <span class="step-num">3</span>
+                        <span>在浏览器中重新点击下载按钮</span>
+                    </div>
+                </div>
+                <div class="browser-icons">
+                    <span>🌐 Chrome</span>
+                    <span>🦊 Firefox</span>
+                    <span>🧭 Safari</span>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    modal.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.6);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 1000;
+        animation: fadeIn 0.3s ease;
+        padding: 1rem;
+    `;
+    
+    const modalContent = modal.querySelector('.modal-content');
+    modalContent.style.cssText = `
+        background: white;
+        border-radius: 20px;
+        text-align: center;
+        max-width: 350px;
+        width: 100%;
+        animation: slideUp 0.3s ease;
+        overflow: hidden;
+    `;
+    
+    const modalHeader = modal.querySelector('.modal-header');
+    modalHeader.style.cssText = `
+        background: linear-gradient(135deg, #3b82f6 0%, #1e40af 100%);
+        color: white;
+        padding: 1.5rem;
+        position: relative;
+    `;
+    
+    const modalBody = modal.querySelector('.modal-body');
+    modalBody.style.cssText = `
+        padding: 2rem 1.5rem;
+    `;
+    
+    const tipIcon = modal.querySelector('.tip-icon');
+    tipIcon.style.cssText = `
+        font-size: 3rem;
+        margin-bottom: 1rem;
+    `;
+    
+    const tipText = modal.querySelector('.tip-text');
+    tipText.style.cssText = `
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: #1f2937;
+        margin-bottom: 0.5rem;
+    `;
+    
+    const tipDesc = modal.querySelector('.tip-desc');
+    tipDesc.style.cssText = `
+        font-size: 0.9rem;
+        color: #6b7280;
+        margin-bottom: 1.5rem;
+    `;
+    
+    const stepsContainer = modal.querySelector('.steps-container');
+    stepsContainer.style.cssText = `
+        text-align: left;
+        margin-bottom: 1.5rem;
+    `;
+    
+    const stepItems = modal.querySelectorAll('.step-item');
+    stepItems.forEach(item => {
+        item.style.cssText = `
+            display: flex;
+            align-items: center;
+            margin-bottom: 1rem;
+            font-size: 0.9rem;
+            line-height: 1.4;
+        `;
+    });
+    
+    const stepNums = modal.querySelectorAll('.step-num');
+    stepNums.forEach(num => {
+        num.style.cssText = `
+            background: #3b82f6;
+            color: white;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin-right: 1rem;
+            flex-shrink: 0;
+        `;
+    });
+    
+    const browserIcons = modal.querySelector('.browser-icons');
+    browserIcons.style.cssText = `
+        display: flex;
+        justify-content: space-around;
+        font-size: 0.8rem;
+        color: #6b7280;
+        border-top: 1px solid #e5e7eb;
+        padding-top: 1rem;
+        margin-top: 1rem;
+    `;
+    
+    const closeBtn = modal.querySelector('.close-btn');
+    closeBtn.style.cssText = `
+        position: absolute;
+        top: 1rem;
+        right: 1rem;
+        background: rgba(255, 255, 255, 0.2);
+        border: none;
+        color: white;
+        font-size: 1.5rem;
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    `;
+    
+    document.body.appendChild(modal);
+    
+    // 关闭按钮事件
+    closeBtn.addEventListener('click', () => {
+        document.body.removeChild(modal);
+    });
+    
+    // 点击背景关闭
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) {
+            document.body.removeChild(modal);
+        }
     });
 }
 
