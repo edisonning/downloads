@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>安装留底 - 设备安装记录系统</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .step-indicator {
+            position: relative;
+        }
+        .step-indicator::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 100%;
+            width: 100%;
+            height: 2px;
+            background: #e5e7eb;
+            transform: translateY(-50%);
+        }
+        .step-indicator.completed::after {
+            background: #0052d9;
+        }
+        .step-indicator:last-child::after {
+            display: none;
+        }
+        .photo-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
+        }
+        .camera-preview {
+            aspect-ratio: 4/3;
+            background: #f3f4f6;
+            border: 2px dashed #d1d5db;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+        .camera-preview:hover {
+            border-color: #0052d9;
+            background: #eff6ff;
+        }
+        .photo-taken {
+            border: 2px solid #10b981;
+            background: #ecfdf5;
+        }
+        .pulse-animation {
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <!-- Header -->
+    <header class="bg-white shadow-sm border-b">
+        <div class="max-w-4xl mx-auto px-4 py-4">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-3">
+                    <i class="fas fa-camera text-2xl text-blue-600"></i>
+                    <h1 class="text-xl font-semibold text-gray-900">安装留底</h1>
+                </div>
+                <div class="flex items-center space-x-2 text-sm text-gray-600">
+                    <i class="fas fa-clock"></i>
+                    <span id="current-time">15:30</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-4xl mx-auto px-4 py-6">
+        <!-- Progress Indicator -->
+        <div class="bg-white rounded-lg shadow-sm p-6 mb-6">
+            <h2 class="text-lg font-medium text-gray-900 mb-4">安装进度</h2>
+            <div class="flex items-center justify-between mb-4">
+                <div class="flex items-center space-x-4">
+                    <div class="step-indicator completed flex items-center justify-center w-8 h-8 bg-blue-600 text-white rounded-full text-sm font-medium">
+                        1
+                    </div>
+                    <div class="step-indicator completed flex items-center justify-center w-8 h-8 bg-blue-600 text-white rounded-full text-sm font-medium">
+                        2
+                    </div>
+                    <div class="step-indicator completed flex items-center justify-center w-8 h-8 bg-blue-600 text-white rounded-full text-sm font-medium">
+                        3
+                    </div>
+                    <div class="step-indicator flex items-center justify-center w-8 h-8 bg-blue-600 text-white rounded-full text-sm font-medium pulse-animation">
+                        4
+                    </div>
+                </div>
+                <div class="text-sm text-gray-600">
+                    <span class="font-medium text-blue-600">4/13</span> 步骤完成
+                </div>
+            </div>
+            <div class="flex justify-between text-xs text-gray-500">
+                <span>检测摄像头</span>
+                <span>校准</span>
+                <span>设置参数</span>
+                <span>拍照留底</span>
+            </div>
+        </div>
+
+        <!-- Current Step -->
+        <div class="bg-white rounded-lg shadow-sm p-6 mb-6">
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="text-lg font-medium text-gray-900">当前步骤：拍照留底</h2>
+                <span class="px-3 py-1 bg-blue-100 text-blue-800 text-sm font-medium rounded-full">
+                    进行中
+                </span>
+            </div>
+            <p class="text-gray-600 mb-4">请按照以下顺序拍摄设备安装照片，确保每张照片清晰可见设备状态。</p>
+            
+            <!-- Photo Requirements -->
+            <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+                <div class="flex items-start space-x-3">
+                    <i class="fas fa-info-circle text-blue-600 mt-1"></i>
+                    <div>
+                        <h3 class="font-medium text-blue-900 mb-2">拍照要求</h3>
+                        <ul class="text-sm text-blue-800 space-y-1">
+                            <li>• 确保光线充足，避免反光和阴影</li>
+                            <li>• 设备在画面中央，占据画面60%以上</li>
+                            <li>• 保持相机稳定，避免模糊</li>
+                            <li>• 每张照片可重新拍摄直到满意</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Photo Grid -->
+        <div class="bg-white rounded-lg shadow-sm p-6">
+            <h3 class="text-lg font-medium text-gray-900 mb-6">拍照清单 (0/9 完成)</h3>
+            
+            <div class="photo-grid">
+                <!-- 天线照片 -->
+                <div class="photo-item">
+                    <div class="camera-preview" onclick="takePhoto('antenna')">
+                        <div class="text-center">
+                            <i class="fas fa-wifi text-3xl text-gray-400 mb-2"></i>
+                            <p class="text-sm font-medium text-gray-600">天线照片</p>
+                            <p class="text-xs text-gray-500 mt-1">点击拍摄</p>
+                        </div>
+                    </div>
+                    <div class="mt-2 flex justify-center space-x-2">
+                        <button class="text-xs text-blue-600 hover:text-blue-800" onclick="showExample('antenna')">
+                            <i class="fas fa-eye mr-1"></i>查看示例
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 主机照片 -->
+                <div class="photo-item">
+                    <div class="camera-preview" onclick="takePhoto('host')">
+                        <div class="text-center">
+                            <i class="fas fa-server text-3xl text-gray-400 mb-2"></i>
+                            <p class="text-sm font-medium text-gray-600">主机照片</p>
+                            <p class="text-xs text-gray-500 mt-1">点击拍摄</p>
+                        </div>
+                    </div>
+                    <div class="mt-2 flex justify-center space-x-2">
+                        <button class="text-xs text-blue-600 hover:text-blue-800" onclick="showExample('host')">
+                            <i class="fas fa-eye mr-1"></i>查看示例
+                        </button>
+                    </div>
+                </div>
+
+                <!-- DSM照片 -->
+                <div class="photo-item">
+                    <div class="camera-preview" onclick="takePhoto('dsm')">
+                        <div class="text-center">
+                            <i class="fas fa-microchip text-3xl text-gray-400 mb-2"></i>
+                            <p class="text-sm font-medium text-gray-600">DSM照片</p>
+                            <p class="text-xs text-gray-500 mt-1">点击拍摄</p>
+                        </div>
+                    </div>
+                    <div class="mt-2 flex justify-center space-x-2">
+                        <button class="text-xs text-blue-600 hover:text-blue-800" onclick="showExample('dsm')">
+                            <i class="fas fa-eye mr-1"></i>查看示例
+                        </button>
+                    </div>
+                </div>
+
+                <!-- ADAS照片 -->
+                <div class="photo-item">
+                    <div class="camera-preview" onclick="takePhoto('adas')">
+                        <div class="text-center">
+                            <i class="fas fa-car text-3xl text-gray-400 mb-2"></i>
+                            <p class="text-sm font-medium text-gray-600">ADAS照片</p>
+                            <p class="text-xs text-gray-500 mt-1">点击拍摄</p>
+                        </div>
+                    </div>
+                    <div class="mt-2 flex justify-center space-x-2">
+                        <button class="text-xs text-blue-600 hover:text-blue-800" onclick="showExample('adas')">
+                            <i class="fas fa-eye mr-1"></i>查看示例
+                        </button>
+                    </div>
+                </div>
+
+                <!-- CH1通道照片 -->
+                <div class="photo-item">
+                    <div class="camera-preview" onclick="takePhoto('ch1')">
+                        <div class="text-center">
+                            <i class="fas fa-video text-3xl text-gray-400 mb-2"></i>
+                            <p class="text-sm font-medium text-gray-600">CH1通道</p>
+                            <p class="text-xs text-gray-500 mt-1">点击拍摄</p>
+                        </div>
+                    </div>
+                    <div class="mt-2 flex justify-center space-x-2">
+                        <button class="text-xs text-blue-600 hover:text-blue-800" onclick="showExample('ch1')">
+                            <i class="fas fa-eye mr-1"></i>查看示例
+                        </button>
+                    </div>
+                </div>
+
+                <!-- CH2通道照片 -->
+                <div class="photo-item">
+                    <div class="camera-preview" onclick="takePhoto('ch2')">
+                        <div class="text-center">
+                            <i class="fas fa-video text-3xl text-gray-400 mb-2"></i>
+                            <p class="text-sm font-medium text-gray-600">CH2通道</p>
+                            <p class="text-xs text-gray-500 mt-1">点击拍摄</p>
+                        </div>
+                    </div>
+                    <div class="mt-2 flex justify-center space-x-2">
+                        <button class="text-xs text-blue-600 hover:text-blue-800" onclick="showExample('ch2')">
+                            <i class="fas fa-eye mr-1"></i>查看示例
+                        </button>
+                    </div>
+                </div>
+
+                <!-- CH3通道照片 -->
+                <div class="photo-item">
+                    <div class="camera-preview" onclick="takePhoto('ch3')">
+                        <div class="text-center">
+                            <i class="fas fa-video text-3xl text-gray-400 mb-2"></i>
+                            <p class="text-sm font-medium text-gray-600">CH3通道</p>
+                            <p class="text-xs text-gray-500 mt-1">点击拍摄</p>
+                        </div>
+                    </div>
+                    <div class="mt-2 flex justify-center space-x-2">
+                        <button class="text-xs text-blue-600 hover:text-blue-800" onclick="showExample('ch3')">
+                            <i class="fas fa-eye mr-1"></i>查看示例
+                        </button>
+                    </div>
+                </div>
+
+                <!-- CH4通道照片 -->
+                <div class="photo-item">
+                    <div class="camera-preview" onclick="takePhoto('ch4')">
+                        <div class="text-center">
+                            <i class="fas fa-video text-3xl text-gray-400 mb-2"></i>
+                            <p class="text-sm font-medium text-gray-600">CH4通道</p>
+                            <p class="text-xs text-gray-500 mt-1">点击拍摄</p>
+                        </div>
+                    </div>
+                    <div class="mt-2 flex justify-center space-x-2">
+                        <button class="text-xs text-blue-600 hover:text-blue-800" onclick="showExample('ch4')">
+                            <i class="fas fa-eye mr-1"></i>查看示例
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 车前照片 -->
+                <div class="photo-item">
+                    <div class="camera-preview" onclick="takePhoto('front')">
+                        <div class="text-center">
+                            <i class="fas fa-car-side text-3xl text-gray-400 mb-2"></i>
+                            <p class="text-sm font-medium text-gray-600">车前照片</p>
+                            <p class="text-xs text-gray-500 mt-1">点击拍摄</p>
+                        </div>
+                    </div>
+                    <div class="mt-2 flex justify-center space-x-2">
+                        <button class="text-xs text-blue-600 hover:text-blue-800" onclick="showExample('front')">
+                            <i class="fas fa-eye mr-1"></i>查看示例
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="mt-8 flex justify-between">
+                <button class="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors">
+                    <i class="fas fa-arrow-left mr-2"></i>上一步
+                </button>
+                <button id="complete-btn" class="px-6 py-2 bg-gray-300 text-gray-500 rounded-lg cursor-not-allowed" disabled>
+                    完成安装 <i class="fas fa-check ml-2"></i>
+                </button>
+            </div>
+        </div>
+    </main>
+
+    <!-- Photo Modal -->
+    <div id="photo-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50">
+        <div class="flex items-center justify-center min-h-screen p-4">
+            <div class="bg-white rounded-lg max-w-md w-full p-6">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 id="modal-title" class="text-lg font-medium text-gray-900">拍摄照片</h3>
+                    <button onclick="closeModal()" class="text-gray-400 hover:text-gray-600">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                
+                <div id="camera-view" class="bg-gray-100 rounded-lg aspect-video mb-4 flex items-center justify-center">
+                    <div class="text-center">
+                        <i class="fas fa-camera text-4xl text-gray-400 mb-2"></i>
+                        <p class="text-gray-600">相机预览</p>
+                    </div>
+                </div>
+                
+                <div class="flex space-x-3">
+                    <button onclick="capturePhoto()" class="flex-1 bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors">
+                        <i class="fas fa-camera mr-2"></i>拍摄
+                    </button>
+                    <button onclick="closeModal()" class="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors">
+                        取消
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Example Modal -->
+    <div id="example-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50">
+        <div class="flex items-center justify-center min-h-screen p-4">
+            <div class="bg-white rounded-lg max-w-lg w-full p-6">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 id="example-title" class="text-lg font-medium text-gray-900">拍摄示例</h3>
+                    <button onclick="closeExampleModal()" class="text-gray-400 hover:text-gray-600">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                
+                <div id="example-image" class="mb-4">
+                    <img src="https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&h=300&fit=crop" 
+                         alt="示例图片" class="w-full rounded-lg">
+                </div>
+                
+                <div id="example-description" class="text-sm text-gray-600 mb-4">
+                    <p>请确保设备清晰可见，位于画面中央位置。</p>
+                </div>
+                
+                <button onclick="closeExampleModal()" class="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors">
+                    知道了
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let completedPhotos = 0;
+        let currentPhotoType = '';
+        
+        // 更新时间
+        function updateTime() {
+            const now = new Date();
+            const timeString = now.toLocaleTimeString('zh-CN', { 
+                hour: '2-digit', 
+                minute: '2-digit' 
+            });
+            document.getElementById('current-time').textContent = timeString;
+        }
+        
+        setInterval(updateTime, 1000);
+        updateTime();
+        
+        // 拍照功能
+        function takePhoto(type) {
+            currentPhotoType = type;
+            const titles = {
+                'antenna': '天线照片',
+                'host': '主机照片',
+                'dsm': 'DSM照片',
+                'adas': 'ADAS照片',
+                'ch1': 'CH1通道照片',
+                'ch2': 'CH2通道照片',
+                'ch3': 'CH3通道照片',
+                'ch4': 'CH4通道照片',
+                'front': '车前照片'
+            };
+            
+            document.getElementById('modal-title').textContent = `拍摄${titles[type]}`;
+            document.getElementById('photo-modal').classList.remove('hidden');
+        }
+        
+        function capturePhoto() {
+            // 模拟拍照成功
+            const photoItem = document.querySelector(`[onclick="takePhoto('${currentPhotoType}')"]`);
+            photoItem.classList.add('photo-taken');
+            photoItem.innerHTML = `
+                <div class="text-center">
+                    <i class="fas fa-check-circle text-3xl text-green-600 mb-2"></i>
+                    <p class="text-sm font-medium text-green-700">已完成</p>
+                    <p class="text-xs text-green-600 mt-1">点击重拍</p>
+                </div>
+            `;
+            
+            completedPhotos++;
+            updateProgress();
+            closeModal();
+            
+            // 显示成功提示
+            showToast('照片拍摄成功！');
+        }
+        
+        function closeModal() {
+            document.getElementById('photo-modal').classList.add('hidden');
+        }
+        
+        function showExample(type) {
+            const examples = {
+                'antenna': {
+                    image: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&h=300&fit=crop',
+                    description: '请拍摄天线的正面视角，确保天线完整清晰可见。'
+                },
+                'host': {
+                    image: 'https://images.unsplash.com/photo-1518709268805-4e9042af2176?w=400&h=300&fit=crop',
+                    description: '请拍摄主机设备的正面，包含所有指示灯和接口。'
+                },
+                'dsm': {
+                    image: 'https://images.unsplash.com/photo-1597733336794-12d05021d510?w=400&h=300&fit=crop',
+                    description: '请拍摄DSM模块的清晰特写，确保型号标识可见。'
+                },
+                'adas': {
+                    image: 'https://images.unsplash.com/photo-1549317661-bd32c8ce0db2?w=400&h=300&fit=crop',
+                    description: '请拍摄ADAS设备的安装位置和连接状态。'
+                },
+                'ch1': {
+                    image: 'https://images.unsplash.com/photo-1574717024653-61fd2cf4d44d?w=400&h=300&fit=crop',
+                    description: '请拍摄CH1通道摄像头的安装位置和视角范围。'
+                },
+                'ch2': {
+                    image: 'https://images.unsplash.com/photo-1574717024653-61fd2cf4d44d?w=400&h=300&fit=crop',
+                    description: '请拍摄CH2通道摄像头的安装位置和视角范围。'
+                },
+                'ch3': {
+                    image: 'https://images.unsplash.com/photo-1574717024653-61fd2cf4d44d?w=400&h=300&fit=crop',
+                    description: '请拍摄CH3通道摄像头的安装位置和视角范围。'
+                },
+                'ch4': {
+                    image: 'https://images.unsplash.com/photo-1574717024653-61fd2cf4d44d?w=400&h=300&fit=crop',
+                    description: '请拍摄CH4通道摄像头的安装位置和视角范围。'
+                },
+                'front': {
+                    image: 'https://images.unsplash.com/photo-1549317661-bd32c8ce0db2?w=400&h=300&fit=crop',
+                    description: '请拍摄车辆前方的整体视角，包含所有安装的设备。'
+                }
+            };
+            
+            const example = examples[type];
+            document.getElementById('example-title').textContent = `${type.toUpperCase()}拍摄示例`;
+            document.getElementById('example-image').innerHTML = `
+                <img src="${example.image}" alt="示例图片" class="w-full rounded-lg">
+            `;
+            document.getElementById('example-description').innerHTML = `<p>${example.description}</p>`;
+            document.getElementById('example-modal').classList.remove('hidden');
+        }
+        
+        function closeExampleModal() {
+            document.getElementById('example-modal').classList.add('hidden');
+        }
+        
+        function updateProgress() {
+            const progressText = document.querySelector('.bg-white.rounded-lg.shadow-sm.p-6.mb-6 .text-sm.text-gray-600 .font-medium.text-blue-600');
+            progressText.textContent = `${4 + completedPhotos}/13`;
+            
+            const photoCountText = document.querySelector('.bg-white.rounded-lg.shadow-sm.p-6 h3');
+            photoCountText.textContent = `拍照清单 (${completedPhotos}/9 完成)`;
+            
+            if (completedPhotos === 9) {
+                const completeBtn = document.getElementById('complete-btn');
+                completeBtn.classList.remove('bg-gray-300', 'text-gray-500', 'cursor-not-allowed');
+                completeBtn.classList.add('bg-green-600', 'text-white', 'hover:bg-green-700');
+                completeBtn.disabled = false;
+                completeBtn.onclick = completeInstallation;
+            }
+        }
+        
+        function completeInstallation() {
+            showToast('安装完成！所有照片已保存。', 'success');
+            setTimeout(() => {
+                alert('安装留底已完成，系统将自动保存所有照片记录。');
+            }, 1000);
+        }
+        
+        function showToast(message, type = 'info') {
+            const toast = document.createElement('div');
+            toast.className = `fixed top-4 right-4 px-6 py-3 rounded-lg text-white z-50 ${
+                type === 'success' ? 'bg-green-600' : 'bg-blue-600'
+            }`;
+            toast.innerHTML = `
+                <div class="flex items-center space-x-2">
+                    <i class="fas fa-${type === 'success' ? 'check' : 'info'}-circle"></i>
+                    <span>${message}</span>
+                </div>
+            `;
+            
+            document.body.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.remove();
+            }, 3000);
+        }
+    </script>
+</body>
+</html>
