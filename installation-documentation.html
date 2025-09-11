@@ -19,6 +19,10 @@
         @keyframes shimmer { 0% { opacity: 0.4; } 50% { opacity: 0.8; } 100% { opacity: 0.4; } }
         .progress-line { position: absolute; top: 20px; left: 60px; right: 60px; height: 4px; background-color: #e5e7eb; z-index: 0; border-radius: 2px; }
         .progress-line-fill { height: 100%; background-color: #3b82f6; border-radius: 2px; transition: width 0.3s ease; }
+        .calibration-card { position: relative; transition: all 0.3s ease; }
+        .calibration-card:hover { transform: translateY(-2px); box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
+        .calibration-card.active { border-color: #3b82f6; background-color: #f0f9ff; }
+        .calibration-card.completed { border-color: #10b981; background-color: #f0fdf4; }
     </style>
 </head>
 <body class="bg-gray-50 min-h-screen">
@@ -63,7 +67,7 @@
                         <div class="step-indicator w-10 h-10 rounded-full flex items-center justify-center text-sm font-medium bg-gray-200 text-gray-600 mb-2" data-step="2">
                             2
                         </div>
-                        <span class="text-xs text-gray-500 text-center whitespace-nowrap">校准</span>
+                        <span class="text-xs text-gray-500 text-center whitespace-nowrap">标定</span>
                     </div>
                     
                     <!-- Step 3 -->
@@ -115,12 +119,12 @@
                         <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
                             <div class="flex items-center">
                                 <i class="fas fa-exclamation-triangle text-yellow-600 mr-2"></i>
-                                <span class="text-yellow-800 font-medium">辅助摄像头 - 需要校准</span>
+                                <span class="text-yellow-800 font-medium">辅助摄像头 - 需要标定</span>
                             </div>
-                            <p class="text-sm text-yellow-700 mt-1">检测到轻微偏移，建议校准</p>
+                            <p class="text-sm text-yellow-700 mt-1">检测到轻微偏移，建议标定</p>
                         </div>
                         <button onclick="nextStep()" class="w-full px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium">
-                            下一步：校准摄像头
+                            下一步：标定摄像头
                         </button>
                     </div>
                 </div>
@@ -130,35 +134,82 @@
         <!-- Step 2: Calibration -->
         <div id="step-2" class="step-content hidden">
             <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                <h2 class="text-xl font-semibold text-gray-900 mb-4">
-                    <i class="fas fa-crosshairs text-blue-600 mr-2"></i>摄像头校准
+                <h2 class="text-xl font-semibold text-gray-900 mb-6">
+                    <i class="fas fa-crosshairs text-blue-600 mr-2"></i>摄像头标定
                 </h2>
-                <div class="grid md:grid-cols-2 gap-6">
-                    <div class="camera-preview rounded-lg h-64 flex items-center justify-center border-2 border-dashed border-gray-300 relative">
-                        <div class="absolute inset-0 flex items-center justify-center">
-                            <div class="w-16 h-16 border-2 border-blue-600 rounded-lg opacity-50"></div>
+                
+                <!-- Calibration Type Selection -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                    <!-- ADAS Calibration -->
+                    <div class="calibration-card border-2 border-gray-200 rounded-lg p-4 cursor-pointer transition-all duration-300 hover:border-blue-500 hover:shadow-md" data-type="adas">
+                        <div class="text-center mb-4">
+                            <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-2">
+                                <i class="fas fa-car text-blue-600 text-xl"></i>
+                            </div>
+                            <h3 class="font-semibold text-gray-900">ADAS标定</h3>
+                            <p class="text-sm text-gray-500">高级驾驶辅助系统</p>
                         </div>
-                        <div class="text-center z-10">
-                            <i class="fas fa-crosshairs text-blue-600 text-2xl mb-2"></i>
-                            <p class="text-gray-600 font-medium">对准校准标记</p>
+                        <div class="calibration-status text-center">
+                            <span class="text-sm text-gray-400">未开始</span>
                         </div>
                     </div>
-                    <div class="space-y-4">
-                        <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                            <h3 class="font-medium text-blue-900 mb-2">校准步骤</h3>
-                            <ol class="text-sm text-blue-800 space-y-1">
-                                <li>1. 将摄像头对准校准标记</li>
-                                <li>2. 调整角度直至标记完全对准</li>
-                                <li>3. 点击"完成校准"按钮</li>
-                            </ol>
+
+                    <!-- BSD Calibration -->
+                    <div class="calibration-card border-2 border-gray-200 rounded-lg p-4 cursor-pointer transition-all duration-300 hover:border-blue-500 hover:shadow-md" data-type="bsd">
+                        <div class="text-center mb-4">
+                            <div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-2">
+                                <i class="fas fa-eye text-green-600 text-xl"></i>
+                            </div>
+                            <h3 class="font-semibold text-gray-900">BSD标定</h3>
+                            <p class="text-sm text-gray-500">盲点检测系统</p>
                         </div>
-                        <div class="flex space-x-3">
-                            <button onclick="previousStep()" class="flex-1 px-4 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors">
-                                上一步
-                            </button>
-                            <button onclick="nextStep()" class="flex-1 px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium">
-                                完成校准
-                            </button>
+                        <div class="calibration-status text-center">
+                            <span class="text-sm text-gray-400">未开始</span>
+                        </div>
+                    </div>
+
+                    <!-- DSM Calibration -->
+                    <div class="calibration-card border-2 border-gray-200 rounded-lg p-4 cursor-pointer transition-all duration-300 hover:border-blue-500 hover:shadow-md" data-type="dsm">
+                        <div class="text-center mb-4">
+                            <div class="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-2">
+                                <i class="fas fa-user-check text-purple-600 text-xl"></i>
+                            </div>
+                            <h3 class="font-semibold text-gray-900">DSM标定</h3>
+                            <p class="text-sm text-gray-500">驾驶员状态监测</p>
+                        </div>
+                        <div class="calibration-status text-center">
+                            <span class="text-sm text-gray-400">未开始</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Calibration Interface (Hidden by default) -->
+                <div id="calibration-interface" class="hidden">
+                    <div class="grid md:grid-cols-2 gap-6 mb-6">
+                        <div class="camera-preview rounded-lg h-64 flex items-center justify-center border-2 border-dashed border-gray-300 relative">
+                            <div class="absolute inset-0 flex items-center justify-center">
+                                <div class="w-16 h-16 border-2 border-blue-600 rounded-lg opacity-50" id="calibration-target"></div>
+                            </div>
+                            <div class="text-center z-10">
+                                <i class="fas fa-crosshairs text-blue-600 text-2xl mb-2"></i>
+                                <p class="text-gray-600 font-medium" id="calibration-instruction">请选择标定类型</p>
+                            </div>
+                        </div>
+                        <div class="space-y-4">
+                            <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                                <h3 class="font-medium text-blue-900 mb-2" id="calibration-title">标定说明</h3>
+                                <div id="calibration-description">
+                                    <p class="text-sm text-blue-800">请选择上方的标定类型开始标定流程。</p>
+                                </div>
+                            </div>
+                            <div class="flex space-x-3">
+                                <button onclick="previousStep()" class="flex-1 px-4 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors">
+                                    上一步
+                                </button>
+                                <button onclick="completeCalibration()" class="flex-1 px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium" id="complete-calibration-btn" disabled>
+                                    完成标定
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -168,73 +219,379 @@
         <!-- Step 3: Parameter Settings -->
         <div id="step-3" class="step-content hidden">
             <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                <h2 class="text-xl font-semibold text-gray-900 mb-4">
+                <h2 class="text-xl font-semibold text-gray-900 mb-6">
                     <i class="fas fa-cog text-blue-600 mr-2"></i>设置参数
                 </h2>
-                <div class="grid md:grid-cols-2 gap-6">
-                    <div class="space-y-6">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">照片质量</label>
-                            <select class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                                <option value="high">高质量 (1920x1080)</option>
-                                <option value="medium" selected>标准质量 (1280x720)</option>
-                                <option value="low">低质量 (640x480)</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">闪光灯模式</label>
-                            <div class="flex space-x-4">
-                                <label class="flex items-center">
-                                    <input type="radio" name="flash" value="auto" checked class="mr-2">
-                                    <span class="text-sm">自动</span>
-                                </label>
-                                <label class="flex items-center">
-                                    <input type="radio" name="flash" value="on" class="mr-2">
-                                    <span class="text-sm">开启</span>
-                                </label>
-                                <label class="flex items-center">
-                                    <input type="radio" name="flash" value="off" class="mr-2">
-                                    <span class="text-sm">关闭</span>
-                                </label>
-                            </div>
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">定时拍照</label>
-                            <select class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                                <option value="0" selected>关闭</option>
-                                <option value="3">3秒</option>
-                                <option value="5">5秒</option>
-                                <option value="10">10秒</option>
-                            </select>
-                        </div>
-                    </div>
-                    <div class="space-y-4">
-                        <div class="bg-gray-50 rounded-lg p-4">
-                            <h3 class="font-medium text-gray-900 mb-2">当前设置</h3>
-                            <div class="space-y-2 text-sm text-gray-600">
-                                <div class="flex justify-between">
-                                    <span>分辨率:</span>
-                                    <span class="font-mono">1280x720</span>
+                
+                <!-- Network Parameters Section -->
+                <div class="mb-8">
+                    <h3 class="text-lg font-medium text-gray-900 mb-4 border-b border-gray-200 pb-2">
+                        <i class="fas fa-network-wired text-blue-600 mr-2"></i>网络参数
+                    </h3>
+                    <div class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-4 gap-4">
+                        <!-- Network Block 1 -->
+                        <div class="bg-gray-50 rounded-lg p-4 border border-gray-200">
+                            <h4 class="font-medium text-gray-900 mb-3 text-center">服务器 1</h4>
+                            <div class="space-y-3">
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-600 mb-1">服务器名称</label>
+                                    <input type="text" class="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-blue-500 focus:border-blue-500" placeholder="输入服务器名称">
                                 </div>
-                                <div class="flex justify-between">
-                                    <span>闪光灯:</span>
-                                    <span>自动</span>
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-600 mb-1">服务器IP/域名</label>
+                                    <input type="text" class="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-blue-500 focus:border-blue-500" placeholder="输入IP或域名">
                                 </div>
-                                <div class="flex justify-between">
-                                    <span>定时器:</span>
-                                    <span>关闭</span>
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-600 mb-1">端口</label>
+                                    <input type="number" class="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-blue-500 focus:border-blue-500" placeholder="输入端口号">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-600 mb-1">连接版本</label>
+                                    <select class="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-blue-500 focus:border-blue-500">
+                                        <option value="808-13">808-13</option>
+                                        <option value="808-19">808-19</option>
+                                        <option value="905">905</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-600 mb-1">主动安全协议</label>
+                                    <select class="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-blue-500 focus:border-blue-500">
+                                        <option value="苏标">苏标</option>
+                                        <option value="粤标">粤标</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-600 mb-1">手机号</label>
+                                    <input type="tel" class="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-blue-500 focus:border-blue-500" placeholder="输入手机号">
                                 </div>
                             </div>
                         </div>
-                        <div class="flex space-x-3">
-                            <button onclick="previousStep()" class="flex-1 px-4 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors">
-                                上一步
-                            </button>
-                            <button onclick="nextStep()" class="flex-1 px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium">
-                                开始拍照
-                            </button>
+
+                        <!-- Network Block 2 -->
+                        <div class="bg-gray-50 rounded-lg p-4 border border-gray-200">
+                            <h4 class="font-medium text-gray-900 mb-3 text-center">服务器 2</h4>
+                            <div class="space-y-3">
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-600 mb-1">服务器名称</label>
+                                    <input type="text" class="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-blue-500 focus:border-blue-500" placeholder="输入服务器名称">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-600 mb-1">服务器IP/域名</label>
+                                    <input type="text" class="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-blue-500 focus:border-blue-500" placeholder="输入IP或域名">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-600 mb-1">端口</label>
+                                    <input type="number" class="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-blue-500 focus:border-blue-500" placeholder="输入端口号">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-600 mb-1">连接版本</label>
+                                    <select class="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-blue-500 focus:border-blue-500">
+                                        <option value="808-13">808-13</option>
+                                        <option value="808-19">808-19</option>
+                                        <option value="905">905</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-600 mb-1">主动安全协议</label>
+                                    <select class="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-blue-500 focus:border-blue-500">
+                                        <option value="苏标">苏标</option>
+                                        <option value="粤标">粤标</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-600 mb-1">手机号</label>
+                                    <input type="tel" class="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-blue-500 focus:border-blue-500" placeholder="输入手机号">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Network Block 3 -->
+                        <div class="bg-gray-50 rounded-lg p-4 border border-gray-200">
+                            <h4 class="font-medium text-gray-900 mb-3 text-center">服务器 3</h4>
+                            <div class="space-y-3">
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-600 mb-1">服务器名称</label>
+                                    <input type="text" class="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-blue-500 focus:border-blue-500" placeholder="输入服务器名称">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-600 mb-1">服务器IP/域名</label>
+                                    <input type="text" class="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-blue-500 focus:border-blue-500" placeholder="输入IP或域名">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-600 mb-1">端口</label>
+                                    <input type="number" class="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-blue-500 focus:border-blue-500" placeholder="输入端口号">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-600 mb-1">连接版本</label>
+                                    <select class="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-blue-500 focus:border-blue-500">
+                                        <option value="808-13">808-13</option>
+                                        <option value="808-19">808-19</option>
+                                        <option value="905">905</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-600 mb-1">主动安全协议</label>
+                                    <select class="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-blue-500 focus:border-blue-500">
+                                        <option value="苏标">苏标</option>
+                                        <option value="粤标">粤标</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-600 mb-1">手机号</label>
+                                    <input type="tel" class="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-blue-500 focus:border-blue-500" placeholder="输入手机号">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Network Block 4 -->
+                        <div class="bg-gray-50 rounded-lg p-4 border border-gray-200">
+                            <h4 class="font-medium text-gray-900 mb-3 text-center">服务器 4</h4>
+                            <div class="space-y-3">
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-600 mb-1">服务器名称</label>
+                                    <input type="text" class="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-blue-500 focus:border-blue-500" placeholder="输入服务器名称">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-600 mb-1">服务器IP/域名</label>
+                                    <input type="text" class="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-blue-500 focus:border-blue-500" placeholder="输入IP或域名">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-600 mb-1">端口</label>
+                                    <input type="number" class="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-blue-500 focus:border-blue-500" placeholder="输入端口号">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-600 mb-1">连接版本</label>
+                                    <select class="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-blue-500 focus:border-blue-500">
+                                        <option value="808-13">808-13</option>
+                                        <option value="808-19">808-19</option>
+                                        <option value="905">905</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-600 mb-1">主动安全协议</label>
+                                    <select class="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-blue-500 focus:border-blue-500">
+                                        <option value="苏标">苏标</option>
+                                        <option value="粤标">粤标</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-600 mb-1">手机号</label>
+                                    <input type="tel" class="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-blue-500 focus:border-blue-500" placeholder="输入手机号">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Network Block 5 -->
+                        <div class="bg-gray-50 rounded-lg p-4 border border-gray-200">
+                            <h4 class="font-medium text-gray-900 mb-3 text-center">服务器 5</h4>
+                            <div class="space-y-3">
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-600 mb-1">服务器名称</label>
+                                    <input type="text" class="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-blue-500 focus:border-blue-500" placeholder="输入服务器名称">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-600 mb-1">服务器IP/域名</label>
+                                    <input type="text" class="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-blue-500 focus:border-blue-500" placeholder="输入IP或域名">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-600 mb-1">端口</label>
+                                    <input type="number" class="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-blue-500 focus:border-blue-500" placeholder="输入端口号">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-600 mb-1">连接版本</label>
+                                    <select class="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-blue-500 focus:border-blue-500">
+                                        <option value="808-13">808-13</option>
+                                        <option value="808-19">808-19</option>
+                                        <option value="905">905</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-600 mb-1">主动安全协议</label>
+                                    <select class="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-blue-500 focus:border-blue-500">
+                                        <option value="苏标">苏标</option>
+                                        <option value="粤标">粤标</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-600 mb-1">手机号</label>
+                                    <input type="tel" class="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-blue-500 focus:border-blue-500" placeholder="输入手机号">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Network Block 6 -->
+                        <div class="bg-gray-50 rounded-lg p-4 border border-gray-200">
+                            <h4 class="font-medium text-gray-900 mb-3 text-center">服务器 6</h4>
+                            <div class="space-y-3">
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-600 mb-1">服务器名称</label>
+                                    <input type="text" class="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-blue-500 focus:border-blue-500" placeholder="输入服务器名称">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-600 mb-1">服务器IP/域名</label>
+                                    <input type="text" class="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-blue-500 focus:border-blue-500" placeholder="输入IP或域名">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-600 mb-1">端口</label>
+                                    <input type="number" class="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-blue-500 focus:border-blue-500" placeholder="输入端口号">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-600 mb-1">连接版本</label>
+                                    <select class="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-blue-500 focus:border-blue-500">
+                                        <option value="808-13">808-13</option>
+                                        <option value="808-19">808-19</option>
+                                        <option value="905">905</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-600 mb-1">主动安全协议</label>
+                                    <select class="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-blue-500 focus:border-blue-500">
+                                        <option value="苏标">苏标</option>
+                                        <option value="粤标">粤标</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-600 mb-1">手机号</label>
+                                    <input type="tel" class="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-blue-500 focus:border-blue-500" placeholder="输入手机号">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Network Block 7 -->
+                        <div class="bg-gray-50 rounded-lg p-4 border border-gray-200">
+                            <h4 class="font-medium text-gray-900 mb-3 text-center">服务器 7</h4>
+                            <div class="space-y-3">
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-600 mb-1">服务器名称</label>
+                                    <input type="text" class="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-blue-500 focus:border-blue-500" placeholder="输入服务器名称">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-600 mb-1">服务器IP/域名</label>
+                                    <input type="text" class="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-blue-500 focus:border-blue-500" placeholder="输入IP或域名">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-600 mb-1">端口</label>
+                                    <input type="number" class="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-blue-500 focus:border-blue-500" placeholder="输入端口号">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-600 mb-1">连接版本</label>
+                                    <select class="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-blue-500 focus:border-blue-500">
+                                        <option value="808-13">808-13</option>
+                                        <option value="808-19">808-19</option>
+                                        <option value="905">905</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-600 mb-1">主动安全协议</label>
+                                    <select class="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-blue-500 focus:border-blue-500">
+                                        <option value="苏标">苏标</option>
+                                        <option value="粤标">粤标</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-600 mb-1">手机号</label>
+                                    <input type="tel" class="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-blue-500 focus:border-blue-500" placeholder="输入手机号">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Network Block 8 -->
+                        <div class="bg-gray-50 rounded-lg p-4 border border-gray-200">
+                            <h4 class="font-medium text-gray-900 mb-3 text-center">服务器 8</h4>
+                            <div class="space-y-3">
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-600 mb-1">服务器名称</label>
+                                    <input type="text" class="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-blue-500 focus:border-blue-500" placeholder="输入服务器名称">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-600 mb-1">服务器IP/域名</label>
+                                    <input type="text" class="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-blue-500 focus:border-blue-500" placeholder="输入IP或域名">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-600 mb-1">端口</label>
+                                    <input type="number" class="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-blue-500 focus:border-blue-500" placeholder="输入端口号">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-600 mb-1">连接版本</label>
+                                    <select class="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-blue-500 focus:border-blue-500">
+                                        <option value="808-13">808-13</option>
+                                        <option value="808-19">808-19</option>
+                                        <option value="905">905</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-600 mb-1">主动安全协议</label>
+                                    <select class="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-blue-500 focus:border-blue-500">
+                                        <option value="苏标">苏标</option>
+                                        <option value="粤标">粤标</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-600 mb-1">手机号</label>
+                                    <input type="tel" class="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-blue-500 focus:border-blue-500" placeholder="输入手机号">
+                                </div>
+                            </div>
                         </div>
                     </div>
+                </div>
+
+                <!-- Vehicle Parameters Section -->
+                <div class="mb-8">
+                    <h3 class="text-lg font-medium text-gray-900 mb-4 border-b border-gray-200 pb-2">
+                        <i class="fas fa-car text-blue-600 mr-2"></i>车辆参数
+                    </h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">车牌号</label>
+                            <input type="text" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="请输入车牌号">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">省域ID</label>
+                            <input type="text" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="请输入省域ID">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">市域ID</label>
+                            <input type="text" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="请输入市域ID">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">VIN码</label>
+                            <input type="text" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="请输入VIN码">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">车牌颜色</label>
+                            <select class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                <option value="">请选择车牌颜色</option>
+                                <option value="unregistered">未上牌</option>
+                                <option value="blue">蓝色</option>
+                                <option value="yellow">黄色</option>
+                                <option value="black">黑色</option>
+                                <option value="white">白色</option>
+                                <option value="other">其他</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">终端型号</label>
+                            <input type="text" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="请输入终端型号">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">制造商ID</label>
+                            <input type="text" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="请输入制造商ID">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">终端ID</label>
+                            <input type="text" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="请输入终端ID">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Navigation Buttons -->
+                <div class="flex justify-between items-center pt-4 border-t border-gray-200">
+                    <button onclick="previousStep()" class="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors">
+                        上一步
+                    </button>
+                    <button onclick="nextStep()" class="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium">
+                        开始拍照
+                    </button>
                 </div>
             </div>
         </div>
@@ -242,13 +599,10 @@
         <!-- Step 4: Photo Capture -->
         <div id="step-4" class="step-content hidden">
             <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                <div class="flex justify-between items-center mb-6">
+                <div class="mb-6">
                     <h2 class="text-xl font-semibold text-gray-900">
                         <i class="fas fa-camera text-blue-600 mr-2"></i>拍照留底
                     </h2>
-                    <div class="text-sm text-gray-500">
-                        已拍摄: <span id="photo-count" class="font-medium text-blue-600">0</span>/9
-                    </div>
                 </div>
                 
                 <!-- Photo Grid -->
@@ -358,12 +712,6 @@
                     <button onclick="previousStep()" class="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors">
                         上一步
                     </button>
-                    <div class="text-center">
-                        <div class="text-sm text-gray-500 mb-1">拍摄进度</div>
-                        <div class="w-48 bg-gray-200 rounded-full h-2">
-                            <div id="progress-bar" class="bg-blue-600 h-2 rounded-full transition-all duration-300" style="width: 0%"></div>
-                        </div>
-                    </div>
                     <button onclick="completeInstallation()" class="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium">
                         完成安装
                     </button>
@@ -416,6 +764,128 @@
         let currentStep = 1;
         let capturedPhotos = new Set();
         let currentPhotoType = '';
+        let calibrationStatus = {
+            adas: false,
+            bsd: false,
+            dsm: false
+        };
+        let currentCalibrationType = '';
+
+        // Calibration functions
+        function selectCalibrationType(type) {
+            currentCalibrationType = type;
+            document.getElementById('calibration-interface').classList.remove('hidden');
+            
+            // Update calibration interface based on type
+            const instruction = document.getElementById('calibration-instruction');
+            const title = document.getElementById('calibration-title');
+            const description = document.getElementById('calibration-description');
+            const target = document.getElementById('calibration-target');
+            const completeBtn = document.getElementById('complete-calibration-btn');
+            
+            // Remove active state from all cards
+            document.querySelectorAll('.calibration-card').forEach(card => {
+                card.classList.remove('border-blue-500', 'bg-blue-50');
+                card.classList.add('border-gray-200');
+            });
+            
+            // Add active state to selected card
+            const selectedCard = document.querySelector(`[data-type="${type}"]`);
+            selectedCard.classList.remove('border-gray-200');
+            selectedCard.classList.add('border-blue-500', 'bg-blue-50');
+            
+            switch(type) {
+                case 'adas':
+                    instruction.textContent = '对准ADAS标定标记';
+                    title.textContent = 'ADAS标定';
+                    description.innerHTML = `
+                        <p class="text-sm text-blue-800 mb-2">ADAS (高级驾驶辅助系统) 标定步骤：</p>
+                        <ol class="text-sm text-blue-800 space-y-1">
+                            <li>1. 将摄像头对准车道线标定板</li>
+                            <li>2. 确保车辆位于正确位置</li>
+                            <li>3. 调整摄像头角度至标准位置</li>
+                            <li>4. 确认标定参数无误</li>
+                        </ol>
+                    `;
+                    target.className = 'w-20 h-12 border-4 border-blue-600 rounded-lg opacity-50';
+                    break;
+                case 'bsd':
+                    instruction.textContent = '对准BSD标定标记';
+                    title.textContent = 'BSD标定';
+                    description.innerHTML = `
+                        <p class="text-sm text-blue-800 mb-2">BSD (盲点检测系统) 标定步骤：</p>
+                        <ol class="text-sm text-blue-800 space-y-1">
+                            <li>1. 将侧方摄像头对准检测区域</li>
+                            <li>2. 调整检测范围和灵敏度</li>
+                            <li>3. 测试盲点检测功能</li>
+                            <li>4. 确认检测区域覆盖完整</li>
+                        </ol>
+                    `;
+                    target.className = 'w-16 h-16 border-4 border-green-600 rounded-full opacity-50';
+                    break;
+                case 'dsm':
+                    instruction.textContent = '对准DSM标定标记';
+                    title.textContent = 'DSM标定';
+                    description.innerHTML = `
+                        <p class="text-sm text-blue-800 mb-2">DSM (驾驶员状态监测) 标定步骤：</p>
+                        <ol class="text-sm text-blue-800 space-y-1">
+                            <li>1. 调整驾驶员检测摄像头</li>
+                            <li>2. 对准驾驶员面部区域</li>
+                            <li>3. 设置疲劳检测参数</li>
+                            <li>4. 测试面部识别功能</li>
+                        </ol>
+                    `;
+                    target.className = 'w-14 h-14 border-4 border-purple-600 rounded-lg opacity-50';
+                    break;
+            }
+            
+            completeBtn.disabled = false;
+        }
+
+        function completeCalibration() {
+            if (!currentCalibrationType) return;
+            
+            // Mark current calibration as completed
+            calibrationStatus[currentCalibrationType] = true;
+            
+            // Update card status
+            const card = document.querySelector(`[data-type="${currentCalibrationType}"]`);
+            const status = card.querySelector('.calibration-status span');
+            status.textContent = '已完成';
+            status.className = 'text-sm text-green-600 font-medium';
+            
+            // Add completion icon
+            card.innerHTML += '<div class="absolute top-2 right-2"><i class="fas fa-check-circle text-green-500"></i></div>';
+            card.style.position = 'relative';
+            
+            // Check if all calibrations are complete
+            if (calibrationStatus.adas && calibrationStatus.bsd && calibrationStatus.dsm) {
+                // Enable next step
+                setTimeout(() => {
+                    nextStep();
+                }, 1000);
+            } else {
+                // Reset for next calibration
+                document.getElementById('calibration-interface').classList.add('hidden');
+                currentCalibrationType = '';
+                
+                // Reset card styles
+                document.querySelectorAll('.calibration-card').forEach(card => {
+                    card.classList.remove('border-blue-500', 'bg-blue-50');
+                    card.classList.add('border-gray-200');
+                });
+            }
+        }
+
+        // Add event listeners for calibration cards
+        document.addEventListener('DOMContentLoaded', function() {
+            document.querySelectorAll('.calibration-card').forEach(card => {
+                card.addEventListener('click', function() {
+                    const type = this.getAttribute('data-type');
+                    selectCalibrationType(type);
+                });
+            });
+        });
 
         function showStep(step) {
             // Hide all step contents
@@ -503,7 +973,6 @@
 
         function confirmPhoto() {
             capturedPhotos.add(currentPhotoType);
-            updatePhotoCount();
             closePhotoModal();
             
             // Update the photo card to show captured status
@@ -522,11 +991,7 @@
             console.log('Retaking photo...');
         }
 
-        function updatePhotoCount() {
-            document.getElementById('photo-count').textContent = capturedPhotos.size;
-            const progress = (capturedPhotos.size / 9) * 100;
-            document.getElementById('progress-bar').style.width = progress + '%';
-        }
+        
 
         function completeInstallation() {
             if (capturedPhotos.size < 9) {
@@ -545,7 +1010,6 @@
             currentStep = 1;
             showStep(currentStep);
             capturedPhotos.clear();
-            updatePhotoCount();
             
             // Reset all photo cards
             document.querySelectorAll('.photo-card').forEach(card => {
